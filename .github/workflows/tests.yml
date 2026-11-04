@@ -27,7 +27,7 @@ jobs:
       # the CUDA build and several hundred MB of nvidia-* wheels the tests never
       # use. These tests are CPU-only by design.
       - name: Install CPU-only PyTorch
-        run: pip install --index-url https://download.pytorch.org/whl/cpu torch
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0+cpu
 
       - name: Install test dependencies
         run: pip install -r requirements-test.txt
