@@ -1,0 +1,46 @@
+# Dependencies for the CPU test suite in tests/.
+#
+# These tests run without model weights and without a GPU, so this is a much
+# smaller set than TMB_MPNN/TMB_MPNN_code/v2.1.1/requirements.txt. This file is
+# CI-only: it does not change what users install to run the pipeline.
+#
+# Versions are pinned so that a red CI run means someone's change broke
+# something, not that an upstream project released a new version overnight.
+# They are the versions verified green in CI on 2026-11-04.
+#
+# To refresh: install unpinned in a scratch venv, run the suite, and copy the
+# resolved versions back here once it passes.
+#
+#   uv venv --python 3.12 /tmp/refresh && \
+#   uv pip install --python /tmp/refresh/bin/python \
+#       --index-url https://download.pytorch.org/whl/cpu torch && \
+#   uv pip install --python /tmp/refresh/bin/python \
+#       numpy biotite matplotlib pandas cytoolz biopython dm-tree coverage && \
+#   uv pip freeze --python /tmp/refresh/bin/python
+#
+# Note that pinning the direct dependencies here does not pin their transitive
+# dependencies; this stops the obvious breakage, not all drift. If that becomes
+# a problem, generate a full lockfile with `uv pip compile` instead.
+#
+# PyTorch is deliberately NOT listed here. Installing `torch` from PyPI pulls
+# the CUDA build and several hundred MB of nvidia-* packages that these tests
+# never use. CI installs the CPU wheel explicitly, pinned, from
+# download.pytorch.org; see .github/workflows/tests.yml.
+#
+# Note: the pipeline requirements pin numpy==1.25.1, which has no wheels for
+# Python 3.12 and will not build. The tests do not depend on that pin.
+
+numpy==2.5.4
+biotite==2.0.0
+matplotlib==3.11.2
+
+# Required transitively: mpnn.datasets.fused_data_utils imports cifutils, which
+# is vendored under TMB_RFD2/TMB_RFD2_code/lib/cifutils rather than installed.
+pandas==3.1.1
+cytoolz==1.2.0
+biopython==1.88
+
+# Required transitively: openfold_dependencies.residue_constants imports `tree`.
+dm-tree==0.1.10
+
+coverage==7.17.2
