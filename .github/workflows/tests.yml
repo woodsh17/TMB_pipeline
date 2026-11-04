@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cpu-tests:
+    name: CPU test suite (Python 3.12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+
+      # Installed separately from the CPU index: plain `pip install torch` pulls
+      # the CUDA build and several hundred MB of nvidia-* wheels the tests never
+      # use. These tests are CPU-only by design.
+      - name: Install CPU-only PyTorch
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch
+
+      - name: Install test dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Report installed versions
+        run: pip list
+
+      # PYTHONPATH is required, not optional: mpnn.datasets.fused_data_utils
+      # imports cifutils, which is vendored under TMB_RFD2 rather than installed.
+      # Without it, tests/test_tmb_mpnn.py fails at import.
+      - name: Run CPU test suite
+        env:
+          PYTHONPATH: TMB_RFD2/TMB_RFD2_code/lib/cifutils
+        run: |
+          python -m coverage run --branch -m unittest discover -s tests -v
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          python -m coverage report \
+            --include="*adj_ss_wrapper_glytwist*,*checkpoint_utils*,*fused_data_utils*,*sc_utils*,*rotation_conversions*"

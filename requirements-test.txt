@@ -1,0 +1,27 @@
+# Dependencies for the CPU test suite in tests/.
+#
+# These tests run without model weights and without a GPU, so this is a much
+# smaller set than TMB_MPNN/TMB_MPNN_code/v2.1.1/requirements.txt.
+#
+# PyTorch is deliberately NOT listed here. Installing `torch` from PyPI pulls the
+# CUDA build and several hundred MB of nvidia-* packages that these tests never
+# use. CI installs the CPU wheel explicitly from download.pytorch.org first; see
+# .github/workflows/tests.yml.
+#
+# Note: the pipeline requirements pin numpy==1.25.1, which has no wheels for
+# Python 3.12 and will not build. The tests do not depend on that pin.
+
+numpy
+biotite
+matplotlib
+
+# Required transitively: mpnn.datasets.fused_data_utils imports cifutils, which
+# is vendored under TMB_RFD2/TMB_RFD2_code/lib/cifutils rather than installed.
+pandas
+cytoolz
+biopython
+
+# Required transitively: openfold_dependencies.residue_constants imports `tree`.
+dm-tree
+
+coverage
